@@ -114,3 +114,36 @@ async def confirm_booking(message: Message):
 
     if operator == "Макар":
         await bot.
+send_message(MAKAR_ID, text)
+    elif operator == "Иван":
+        await bot.send_message(IVAN_ID, text)
+
+    await message.answer("✅ Ваша заявка отправлена!\nСкоро с вами свяжутся.", reply_markup=main_menu)
+    user_states.pop(message.from_user.id)
+
+@dp.message(F.text == "📞 Контакты")
+async def contacts(message: Message):
+    await message.answer("📲 Наши контакты:\nTelegram: @WAVEY_SOUND")
+
+@dp.message(F.text == "📍 Адрес студии")
+async def studio_address(message: Message):
+    await message.answer("🏢 Мы находимся в г. Ростов-на-Дону\n📍 ул. Михаила Нагибина, 14Г")
+
+@dp.message(F.text == "👤 Администратор")
+async def admin_info(message: Message):
+    await message.answer("👤 Администратор студии: @AttaRaxOnMe")
+
+@dp.message(F.text.in_(["⬅ Назад", "⬅ Назад в меню"]))
+async def back_to_menu(message: Message):
+    await message.answer("Главное меню:", reply_markup=main_menu)
+
+@dp.message()
+async def fallback(message: Message):
+    await message.answer("Выберите действие через меню снизу 👇", reply_markup=main_menu)
+
+# Запуск бота
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
