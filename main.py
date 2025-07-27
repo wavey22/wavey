@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Инициализация бота
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -60,11 +59,7 @@ async def handle_buttons(message: Message):
         )
 
     elif text == "📞 Контакты":
-        await message.answer(
-            "📞 Связь с нами:\n"
-            "Telegram: @waveyrec\n"
-            "Instagram: @wavey.rec"
-        )
+        await message.answer("📲 Наши контакты:\nTelegram: @WAVEY_SOUND")
 
     elif text == "📍 Адрес студии":
         await message.answer(
@@ -74,11 +69,23 @@ async def handle_buttons(message: Message):
     elif text == "🎚 Звукооператор":
         await message.answer("Выберите звукооператора:", reply_markup=operator_menu)
 
-    elif text in ["🎛 Макар", "🎛 Иван"]:
-        await message.answer(f"📌 Вы выбрали оператора: {text}\nНаш админ скоро свяжется с вами.")
+    elif text == "🎛 Макар":
+        await message.answer(
+            "🎛 Вы выбрали звукорежиссёра Макар.\n"
+            "Свяжитесь с ним: @CYStnzo\n"
+            "⚠️ Скоро вы сможете выбрать удобное время через календарь."
+        )
+        # тут в будущем подключим Google Календарь
+
+    elif text == "🎛 Иван":
+        await message.answer(
+            "🎛 Вы выбрали звукорежиссёра Иван.\n"
+            "Свяжитесь с ним: @aa_ladno\n"
+            "⚠️ Скоро вы сможете выбрать удобное время через календарь."
+        )
 
     elif text == "👤 Администратор":
-        await message.answer("📲 Для связи с администратором: @waveyadmin")
+        await message.answer("👤 Администратор студии: @AttaRaxOnMe")
 
     elif text == "⬅ Назад":
         await message.answer("Главное меню:", reply_markup=main_menu)
