@@ -18,9 +18,9 @@ def handle_all_messages(message):
         bot.send_message(message.chat.id, "Чтобы записаться, напиши нам в Telegram: @your_studio_admin")
     elif message.text == "💰 Прайс":
         bot.send_message(message.chat.id, "Наши услуги:"
-- Запись вокала: 2000₽/час
-- Сведение: от 3000₽
-- Мастеринг: от 2000₽")
+- Запись вокала: 2000р/час
+- Сведение: от 3000р
+- Мастеринг: от 2000р")
     elif message.text == "🎧 Портфолио":
         bot.send_message(message.chat.id, "Слушай наши работы здесь:
 https://t.me/your_portfolio_channel")
