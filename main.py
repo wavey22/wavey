@@ -7,7 +7,6 @@ from aiogram.filters import CommandStart
 from aiogram.client.default import DefaultBotProperties
 from dotenv import load_dotenv
 
-# Загрузка токена
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -28,6 +27,16 @@ main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+# Меню услуг
+service_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="🎙 Запись"), KeyboardButton(text="🎚 Сведение")],
+        [KeyboardButton(text="🥁 Бит"), KeyboardButton(text="➕ Дополнительные услуги")],
+        [KeyboardButton(text="⬅ Назад в меню")],
+    ],
+    resize_keyboard=True
+)
+
 # Звукооператоры
 operator_menu = ReplyKeyboardMarkup(
     keyboard=[
@@ -37,7 +46,6 @@ operator_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# Старт
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
     await message.answer(
@@ -45,17 +53,31 @@ async def cmd_start(message: Message):
         reply_markup=main_menu
     )
 
-# Обработка кнопок
 @dp.message()
 async def handle_buttons(message: Message):
     text = message.text
 
     if text == "🎧 Услуги":
+        await message.answer("Выберите нужную услугу:", reply_markup=service_menu)
+
+    elif text == "🎙 Запись":
         await message.answer(
-            "<b>Прайс:</b>\n"
-            "- Запись: от 500₽\n"
-            "- Сведение: от 3000₽\n"
-            "- Мастеринг: от 2000₽"
+            "🎙 <b>Запись</b>: от 500₽\n\nВыберите звукооператора:", reply_markup=operator_menu
+        )
+
+    elif text == "🎚 Сведение":
+        await message.answer(
+            "🎚 <b>Сведение</b>: от 3000₽\n\nВыберите звукооператора:", reply_markup=operator_menu
+        )
+
+    elif text == "🥁 Бит":
+        await message.answer(
+            "🥁 <b>Бит</b>: от 3000₽\n\nВыберите звукооператора:", reply_markup=operator_menu
+        )
+
+    elif text == "➕ Дополнительные услуги":
+        await message.answer(
+            "Для обсуждения дополнительных услуг свяжитесь с администратором: @AttaRaxOnMe"
         )
 
     elif text == "📞 Контакты":
@@ -71,23 +93,18 @@ async def handle_buttons(message: Message):
 
     elif text == "🎛 Макар":
         await message.answer(
-            "🎛 Вы выбрали звукорежиссёра Макар.\n"
-            "Свяжитесь с ним: @CYStnzo\n"
-            "⚠️ Скоро вы сможете выбрать удобное время через календарь."
+            "🎛 Вы выбрали звукорежиссёра Макар.\nСвяжитесь с ним: @CYStnzo"
         )
-        # тут в будущем подключим Google Календарь
 
     elif text == "🎛 Иван":
         await message.answer(
-            "🎛 Вы выбрали звукорежиссёра Иван.\n"
-            "Свяжитесь с ним: @aa_ladno\n"
-            "⚠️ Скоро вы сможете выбрать удобное время через календарь."
+            "🎛 Вы выбрали звукорежиссёра Иван.\nСвяжитесь с ним: @aa_ladno"
         )
 
     elif text == "👤 Администратор":
         await message.answer("👤 Администратор студии: @AttaRaxOnMe")
 
-    elif text == "⬅ Назад":
+    elif text == "⬅ Назад" or text == "⬅ Назад в меню":
         await message.answer("Главное меню:", reply_markup=main_menu)
 
     else:
