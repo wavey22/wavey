@@ -1,8 +1,8 @@
 import os
 import asyncio
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.enums import ParseMode
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.filters import CommandStart
 from aiogram.client.default import DefaultBotProperties
 from dotenv import load_dotenv
@@ -10,11 +10,15 @@ from dotenv import load_dotenv
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-bot = Bot(
-    token=BOT_TOKEN,
-    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-)
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
+
+# Звукооператоры Telegram user_id
+MAKAR_ID = 864755307
+IVAN_ID = 536852886
+
+# Глобальные переменные для текущего выбора
+user_states = {}
 
 # Главное меню
 main_menu = ReplyKeyboardMarkup(
@@ -27,7 +31,7 @@ main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# Меню услуг
+# Меню выбора услуг
 service_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🎙 Запись"), KeyboardButton(text="🎚 Сведение")],
@@ -46,73 +50,67 @@ operator_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+# Кнопка записаться
+confirm_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📩 Записаться")],
+        [KeyboardButton(text="⬅ Назад в меню")],
+    ],
+    resize_keyboard=True
+)
+
 @dp.message(CommandStart())
-async def cmd_start(message: Message):
+async def start_cmd(message: Message):
     await message.answer(
         "Добро пожаловать в студию WAVEY 🎙\nВыберите действие из меню ниже:",
         reply_markup=main_menu
     )
 
-@dp.message()
-async def handle_buttons(message: Message):
-    text = message.text
+@dp.message(F.text == "🎧 Услуги")
+async def choose_service(message: Message):
+    await message.answer("Выберите услугу:", reply_markup=service_menu)
 
-    if text == "🎧 Услуги":
-        await message.answer("Выберите нужную услугу:", reply_markup=service_menu)
+@dp.message(F.text == "🎙 Запись")
+async def service_record(message: Message):
+    user_states[message.from_user.id] = {'service': 'Запись'}
+    await message.answer("🎙 <b>Запись</b>: от 500₽\nВыберите звукорежиссёра:", reply_markup=operator_menu)
 
-    elif text == "🎙 Запись":
-        await message.answer(
-            "🎙 <b>Запись</b>: от 500₽\n\nВыберите звукооператора:", reply_markup=operator_menu
-        )
+@dp.message(F.text == "🎚 Сведение")
+async def service_mix(message: Message):
+    user_states[message.from_user.id] = {'service': 'Сведение'}
+    await message.answer("🎚 <b>Сведение</b>: от 3000₽\nВыберите звукорежиссёра:", reply_markup=operator_menu)
 
-    elif text == "🎚 Сведение":
-        await message.answer(
-            "🎚 <b>Сведение</b>: от 3000₽\n\nВыберите звукооператора:", reply_markup=operator_menu
-        )
+@dp.message(F.text == "🥁 Бит")
+async def service_beat(message: Message):
+    user_states[message.from_user.id] = {'service': 'Бит'}
+    await message.answer("🥁 <b>Бит</b>: от 3000₽\nВыберите звукорежиссёра:", reply_markup=operator_menu)
 
-    elif text == "🥁 Бит":
-        await message.answer(
-            "🥁 <b>Бит</b>: от 3000₽\n\nВыберите звукооператора:", reply_markup=operator_menu
-        )
+@dp.message(F.text == "➕ Дополнительные услуги")
+async def extra_services(message: Message):
+    await message.answer("Для обсуждения дополнительных услуг свяжитесь с администратором: @AttaRaxOnMe")
 
-    elif text == "➕ Дополнительные услуги":
-        await message.answer(
-            "Для обсуждения дополнительных услуг свяжитесь с администратором: @AttaRaxOnMe"
-        )
+@dp.message(F.text == "🎛 Макар")
+async def choose_makar(message: Message):
+    user_states[message.from_user.id]['operator'] = 'Макар'
+    await message.answer("Вы выбрали звукооператора: Макар\nНажмите 📩 Записаться, чтобы отправить заявку", reply_markup=confirm_menu)
 
-    elif text == "📞 Контакты":
-        await message.answer("📲 Наши контакты:\nTelegram: @WAVEY_SOUND")
+@dp.message(F.text == "🎛 Иван")
+async def choose_ivan(message: Message):
+    user_states[message.from_user.id]['operator'] = 'Иван'
+    await message.answer("Вы выбрали звукооператора: Иван\nНажмите 📩 Записаться, чтобы отправить заявку", reply_markup=confirm_menu)
 
-    elif text == "📍 Адрес студии":
-        await message.answer(
-            "🏢 Мы находимся в г. Ростов-на-Дону\n📍 Адрес: ул. Михаила Нагибина, 14Г"
-        )
+@dp.message(F.text == "📩 Записаться")
+async def confirm_booking(message: Message):
+    data = user_states.get(message.from_user.id)
+    if not data or 'service' not in data or 'operator' not in data:
+        await message.answer("Сначала выберите услугу и звукорежиссёра.")
+        return
 
-    elif text == "🎚 Звукооператор":
-        await message.answer("Выберите звукооператора:", reply_markup=operator_menu)
+    operator = data['operator']
+    service = data['service']
+    username = message.from_user.username or message.from_user.full_name
 
-    elif text == "🎛 Макар":
-        await message.answer(
-            "🎛 Вы выбрали звукорежиссёра Макар.\nСвяжитесь с ним: @CYStnzo"
-        )
+    text = f"⚡️ Новый клиент @{username} хочет записаться на услугу: <b>{service}</b>"
 
-    elif text == "🎛 Иван":
-        await message.answer(
-            "🎛 Вы выбрали звукорежиссёра Иван.\nСвяжитесь с ним: @aa_ladno"
-        )
-
-    elif text == "👤 Администратор":
-        await message.answer("👤 Администратор студии: @AttaRaxOnMe")
-
-    elif text == "⬅ Назад" or text == "⬅ Назад в меню":
-        await message.answer("Главное меню:", reply_markup=main_menu)
-
-    else:
-        await message.answer("Выберите действие через меню снизу 👇")
-
-# Запуск
-async def main():
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    if operator == "Макар":
+        await bot.
