@@ -1,39 +1,47 @@
-import telebot
-from telebot import types
+import os
+from aiogram import Bot, Dispatcher, types
+from aiogram.utils import executor
+from dotenv import load_dotenv
 
-API_TOKEN = '8054496771:AAFn0qTsUwnnGCppGjFXfXjVZtJwhsxzk0w'
-bot = telebot.TeleBot(API_TOKEN)
+# Загружаем переменные окружения
+load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row("🎙 Записаться", "💰 Прайс", "🎧 Портфолио")
-    markup.row("📍 Контакты", "❓ FAQ")
-    bot.send_message(message.chat.id, 
-        "Привет! Добро пожаловать в студию звукозаписи. Чем могу помочь?", reply_markup=markup)
+# Инициализируем бота и диспетчер
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher(bot)
 
-@bot.message_handler(func=lambda message: True)
-def handle_all_messages(message):
-    if message.text == "🎙 Записаться":
-        bot.send_message(message.chat.id, "Чтобы записаться, напиши нам в Telegram: @your_studio_admin")
-    elif message.text == "💰 Прайс":
-        bot.send_message(message.chat.id, "Наши услуги:
-- Запись вокала: 2000р/час
-- Сведение: от 3000р
-- Мастеринг: от 2000р")
-    elif message.text == "🎧 Портфолио":
-        bot.send_message(message.chat.id, "Слушай наши работы здесь:
-https://t.me/your_portfolio_channel")
-    elif message.text == "📍 Контакты":
-        bot.send_message(message.chat.id, "Адрес: Москва, Примерная улица 10
-Телефон: +7 (999) 123-45-67
-Instagram: @your_studio_ig")
-    elif message.text == "❓ FAQ":
-        bot.send_message(message.chat.id, "Частые вопросы:
-— Что брать с собой?
-— Можно ли прийти с друзьями?
-— Сколько длится сессия?")
-    else:
-        bot.send_message(message.chat.id, "Выберите опцию из меню ⬆️")
+# Команда /start
+@dp.message_handler(commands=['start'])
+async def start_handler(message: types.Message):
+    await message.reply("Привет! Я бот студии звукозаписи 🎧\nНапиши /help, чтобы узнать, что я умею.")
 
-bot.infinity_polling()
+# Команда /help
+@dp.message_handler(commands=['help'])
+async def help_handler(message: types.Message):
+    await message.reply("""Вот, что я умею:
+🎵 /price — Прайс на услуги
+📞 /contact — Контакты
+📍 /location — Адрес студии""")
+
+# Команда /price
+@dp.message_handler(commands=['price'])
+async def price_handler(message: types.Message):
+    await message.reply("""🎚 Прайс на услуги:
+- Запись: от 1500 руб
+- Сведение (микс): от 2500 руб
+- Мастеринг: от 2000 руб""")
+
+# Команда /contact
+@dp.message_handler(commands=['contact'])
+async def contact_handler(message: types.Message):
+    await message.reply("📞 Наши контакты:\nTelegram: @waveyrec\nInstagram: @wavey.rec")
+
+# Команда /location
+@dp.message_handler(commands=['location'])
+async def location_handler(message: types.Message):
+    await message.reply("📍 Мы находимся в Москве, рядом с метро XYZ. Уточни адрес у администратора.")
+
+# Запуск бота
+if name == '__main__':
+    executor.start_polling(dp, skip_updates=True)
